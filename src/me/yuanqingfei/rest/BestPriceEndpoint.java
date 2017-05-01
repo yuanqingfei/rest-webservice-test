@@ -29,45 +29,44 @@ import me.yuanqingfei.service.PriceQuerable;
 @Component
 @Path("/product")
 public class BestPriceEndpoint {
-	
+
 	private List<PriceQuerable> suppliers;
-	
+
 	@Resource(name = "bestbuyInvoker")
 	private PriceQuerable bestbuySupplier;
-	
+
 	@Resource(name = "walmartInvoker")
 	private PriceQuerable walmartSupplier;
-	
+
 	@PostConstruct
-	public void setupSuppliers(){
+	public void setupSuppliers() {
 		suppliers = new ArrayList<PriceQuerable>();
 		suppliers.add(bestbuySupplier);
 		suppliers.add(walmartSupplier);
-		
-		System.out.println("suppliers: " + suppliers);
 	}
-	
+
 	@GET
 	@Path("/search")
-	@Produces({MediaType.APPLICATION_JSON})
-	@JacksonFeatures(serializationEnable =  { SerializationFeature.INDENT_OUTPUT })
+	@Produces({ MediaType.APPLICATION_JSON })
+	@JacksonFeatures(serializationEnable = { SerializationFeature.INDENT_OUTPUT })
 	public BestPrice queryBest(@QueryParam("name") @NotNull String queryName) {
-		
+
 		if ("".equals(queryName.trim())) {
 			return null;
 		}
-		
-		// assume all supplier will use the same currency: CAD for simplicity for now.
+
+		// assume all supplier will use the same currency: CAD for simplicity
+		// for now.
 		BestPrice result = new BestPrice();
 		double lowestPrice = 1000000000000000D; // very large
-		for(PriceQuerable supplier : suppliers){
+		for (PriceQuerable supplier : suppliers) {
 			BestPrice bestPrice = supplier.queryPrice(queryName);
-			if (bestPrice.getBestPrice().doubleValue() < lowestPrice){
+			if (bestPrice.getBestPrice() != null && bestPrice.getBestPrice().doubleValue() < lowestPrice) {
 				lowestPrice = bestPrice.getBestPrice().doubleValue();
 				result = bestPrice;
 			}
 		}
-				
+
 		return result;
 	}
 
